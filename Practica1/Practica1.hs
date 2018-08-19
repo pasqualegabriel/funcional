@@ -100,48 +100,79 @@ sub (Suc n1) (Suc n2) = sub n1 n2
 --data [ a ] = [] | a : [ a ]
 
 vacia :: [a] -> Bool --(indica si está vacía)
+vacia [] = True
+vacia _  = False
 
+cabeza :: [a] -> a --(retorna el primer elemento)
+cabeza (x:_) = x
 
---cabeza :: [a] -> a --(retorna el primer elemento)
+sinPrimero :: [a] -> [a] --(retorna la lista con todos los elementos menos el primero)
+sinPrimero (_:xs) = xs
 
+size :: [a] -> Int --(retorna la longitud de la lista)
+size   []   = 0
+size (x:xs) = 1 + size xs 
 
---sinPrimero :: [a] -> [a] --(retorna la lista con todos los elementos menos el primero)
+(+++) :: [a] -> [a] -> [a] --(concatena dos listas)
+(+++) xs [] = xs
+(+++) [] ys = ys
+(+++) (x:xs) ys = x : xs +++ ys 
+ 
+belongs :: Eq a => a -> [a] -> Bool --(indica si un elemento pertenece a la lista)
+belongs _   []   = False
+belongs e (x:xs) = e == x || belongs e xs
 
+(!!!) :: [a] -> Int -> a --(retorna el i-ésimo elemento de la lista indexado desde 0)
+(!!!) (x:_)  0 = x 
+(!!!) (x:xs) n = xs !!! (n -1)
 
---size :: [a] -> Int --(retorna la longitud de la lista)
+alreves :: [a] -> [a] --(retorna la lista al revés)
+alreves   []   = []
+alreves (x:xs) = (alreves xs) ++ [x]
 
-
---(+++) :: [a] -> [a] -> [a] --(concatena dos listas)
-
-
---belongs :: Eq a => a -> [a] -> Bool --(indica si un elemento pertenece a la lista)
-
-
---(!!!) :: [a] -> Int -> a --(retorna el i-ésimo elemento de la lista indexado desde 0)
-
-
---alreves :: [a] -> [a] --(retorna la lista al revés)
-
-
--- Practica 6
+-- Ejercicio 6
 -- Patrones: Indicar si los siguientes patterns son correctos:
---a) (x, y)
+--a) (x, y)         
 --b) (1, y)
---c) (n+1)
---d) ('a',('a',b))
+--c) (n+1)         
+--d) ('a',('a',b)) 
 --e) (a,(a,b))
 --f) ([]:[4])
 --g) (x:y:[])
 --h) [x]
 --i) ([]:[])
 
--- Practica 7
+-- Ejercicio 7
 --Reduzca las siguientes expresiones hasta alcanzar la forma normal 
 --(indique la regla utilizada en cada paso):
 
 --a) add (Suc Zero) (Suc Zero)
+--      Suc (Suc Zero)
+
 --b) isNothing (sub Zero (Suc Zero))
+--   isNothing Nothing
+--   True
+
 --c) fst (swap (True, False))
+--   fst (False, True)
+--   False
+
 --d) length [1,2,3]
+--   1 + length [2,3]
+--   1 + 1 + length [3]
+--   1 + 1 + 1 + length []
+--   1 + 1 + 1 + 0
+--   3
+
 --e) [1,2,3] !! 2
+--   [2,3] !! 1
+--   [3] !! 0
+--   3
+
 --f) not (elem 2 [1,2,3])
+--   not (2 == 1 || elem 2 [2,3])
+--   not (2 == 1 || 2 == 2 || elem 2 [3])
+--   not (2 == 1 || 2 == 2 || 2 == 3 || elem 2 [])
+--   not (2 == 1 || 2 == 2 || 2 == 3 || False)
+--   not True
+--   False
