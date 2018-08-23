@@ -132,15 +132,15 @@ alreves (x:xs) = (alreves xs) ++ [x]
 
 -- Ejercicio 6
 -- Patrones: Indicar si los siguientes patterns son correctos:
---a) (x, y)         
---b) (1, y)
---c) (n+1)         
---d) ('a',('a',b)) 
---e) (a,(a,b))
---f) ([]:[4])
---g) (x:y:[])
---h) [x]
---i) ([]:[])
+--a) (x, y)        si
+--b) (1, y)        si
+--c) (n+1)         no
+--d) ('a',('a',b)) no
+--e) (a,(a,b))     no
+--f) ([]:[4])      no
+--g) (x:y:[])      si
+--h) [x]           si
+--i) ([]:[])       si
 
 -- Ejercicio 7
 --Reduzca las siguientes expresiones hasta alcanzar la forma normal 

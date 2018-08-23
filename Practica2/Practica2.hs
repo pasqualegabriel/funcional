@@ -29,11 +29,26 @@
 
 --3 Funciones de alto orden
 --Definir las siguientes funciones:
---a) const :: a -> b -> a
---b) alph :: a -> b -> b
---c) apply :: (a -> b) -> a -> b (aka ($) )
---d) twice :: a -> b -> b
---e) flip :: (a -> b -> c) -> b -> a -> c
+
+const :: a -> b -> a
+const x = \y -> x
+--const 1 "2"
+
+alph :: a -> b -> b
+alph x = \y -> y
+-- alph 1 "2"
+
+apply :: (a -> b) -> a -> b
+apply f = f
+-- apply (+1) 2
+
+twice :: a -> b -> b
+twice x = \y -> y
+
+flip :: (a -> b -> c) -> b -> a -> c
+flip f = \x -> \y -> f y x
+-- flip (+) 1 2
+
 --f) (.) :: (b -> c) -> (a -> b) -> (a -> c)
 --g) curry :: ((a,b) -> c) -> a -> b -> c
 --h) uncurry :: (a -> b -> c) -> (a,b) -> c
@@ -63,6 +78,6 @@
 --a) and :: Bool -> Bool -> Bool
 --b) or :: Bool -> Bool -> Bool
 --c) ifThenElse :: Bool -> a -> a -> a
---¿Es posible dar una definición para estas funciones que tenga el beneficio de cortocircuito aún
+-- ¿Es posible dar una definición para estas funciones que tenga el beneficio de cortocircuito aún
 --con un orden de evaluación Eager?
 
