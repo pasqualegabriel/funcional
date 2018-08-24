@@ -94,8 +94,20 @@ takeWhile2 f (x:xs) | f x = x : takeWhile2 f xs
                     | otherwise = takeWhile2 f []
 -- takeWhile2 (>2) [3,4,5,6,2,7,1]
 
---f) concatMap :: (a -> [b]) -> [a] -> [b]
---g) partition :: (a -> Bool) -> [a] -> ([a], [a])
+concatMap2 :: (a -> [b]) -> [a] -> [b]
+concatMap2 f   []   = []
+concatMap2 f (x:xs) = f x ++ concatMap2 f xs 
+
+partition2 :: (a -> Bool) -> [a] -> ([a], [a])
+partition2 f   []   = ([], [])
+partition2 f (x:xs) = let res1 = partition2 f xs
+                          l1  = fst res1
+                          l2  = snd res1
+                      in if f x  
+                      	 then (x:l1, l2)
+                      	 else (l1, x:l2)
+-- partition2 (>2) [1,2,3,4,5,6]
+
 --h) zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
 
 --5 Composición
