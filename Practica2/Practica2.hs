@@ -22,8 +22,8 @@
 --Describa el propósito de las siguientes typeclasses:
 --a) Eq
 --b) Ord
---c) Enum
---d) Bounded
+--c) Enum    enumera un data https://stackoverflow.com/questions/6000511/better-way-to-define-an-enum-in-haskell 
+--d) Bounded https://stackoverflow.com/questions/4557394/how-do-you-use-the-bounded-typeclass-in-haskell-to-define-a-type-with-a-floating
 --e) Num
 --f) Show
 --g) Read
