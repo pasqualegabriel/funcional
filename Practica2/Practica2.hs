@@ -48,9 +48,11 @@ twice x = \y -> y
 
 flip :: (a -> b -> c) -> b -> a -> c
 flip f = \x -> \y -> f y x
--- flip (+) 1 2
+-- flip (+) 1 
 
---(.) :: (b -> c) -> (a -> b) -> (a -> c)
+(.) :: (b -> c) -> (a -> b) -> (a -> c)
+(.) f g = h
+   where h x = f (g x)
 
 curry :: ((a, b) -> c) -> a -> b -> c
 curry f x y = f (x, y)
@@ -100,15 +102,19 @@ concatMap2 f (x:xs) = f x ++ concatMap2 f xs
 
 partition2 :: (a -> Bool) -> [a] -> ([a], [a])
 partition2 f   []   = ([], [])
-partition2 f (x:xs) = let res1 = partition2 f xs
-                          l1  = fst res1
-                          l2  = snd res1
+partition2 f (x:xs) = let res = partition2 f xs
+                          l1  = fst res
+                          l2  = snd res
                       in if f x  
                       	 then (x:l1, l2)
                       	 else (l1, x:l2)
 -- partition2 (>2) [1,2,3,4,5,6]
 
---h) zipWith :: (a -> b -> c) -> [a] -> [b] -> [c]
+zipWith2 :: (a -> b -> c) -> [a] -> [b] -> [c]
+zipWith2 f [] _  = []
+zipWith2 f _  [] = []
+zipWith2 f (x:xs) (y:ys) = f x y : zipWith2 f xs ys
+-- zipWith2 (+) [1,2,3,4,5] [6,7,8,9,10,11]
 
 --5 Composición
 --Sea h x y = f (g x y) . Decidir cuáles de las siguientes afirmaciones son verdaderas:
@@ -121,15 +127,22 @@ partition2 f (x:xs) = let res1 = partition2 f xs
 --data Bool = True | False
 --Considerando el orden de evaluación Lazy, definir las siguientes funciones de forma tal que sólo
 --se evalué el primer parámetro cuando sea posible (eg. or True bottom debería reducir a True):
---a) and :: Bool -> Bool -> Bool
---b) or :: Bool -> Bool -> Bool
---c) ifThenElse :: Bool -> a -> a -> a
+and2 :: Bool -> Bool -> Bool
+and2 False _   = False 
+and2  _  False = False
+and2  _    _   = True
+-- and2 False undefined
+
+or2 :: Bool -> Bool -> Bool
+or2 True _   = True 
+or2  _  True = True
+or2  _   _   = False
+-- or2 True undefined
+
+ifThenElse :: Bool -> a -> a -> a
+ifThenElse True  x _ = x
+ifThenElse False _ y = y
+-- ifThenElse True 1 undefined
+
 -- ¿Es posible dar una definición para estas funciones que tenga el beneficio de cortocircuito aún
 --con un orden de evaluación Eager?
-
--- Extras
-positives :: [Int] -> [Int]
-positives [] = []
-positives (x:xs) | x > 0 = x : positives xs
-                 | otherwise = positives xs
---positives xs = [ x | x <- xs, x > 0 ]
