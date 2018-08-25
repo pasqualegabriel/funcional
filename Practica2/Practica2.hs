@@ -43,16 +43,16 @@ apply :: (a -> b) -> a -> b
 apply f = f
 -- apply (1+) 2
 
-twice :: a -> b -> b
-twice x = \y -> y
+twice :: (a -> a) -> a -> a
+twice = \f -> \x -> f (f x)
+-- twice (1+) 3
 
 flip :: (a -> b -> c) -> b -> a -> c
 flip f = \x -> \y -> f y x
 -- flip (+) 1 
 
-(.) :: (b -> c) -> (a -> b) -> (a -> c)
-(.) f g = h
-   where h x = f (g x)
+(.) :: (b -> c) -> (a -> b) -> a -> c
+(.) f g x = f (g x)
 
 curry :: ((a, b) -> c) -> a -> b -> c
 curry f x y = f (x, y)
