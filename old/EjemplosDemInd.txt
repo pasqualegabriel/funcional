@@ -1,0 +1,173 @@
+1)
+
+factorial x = product (countFrom x)
+
+countFrom :: Int -> Int -> [Int]
+countFrom 0 = []
+countFrom n = n : countFrom (n-1)
+
+Demostración por inducción en x
+
+Caso base x = 0
+
+factorial 0 = 1
+
+product (CountFrom 0) = product [] = 1
+
+Caso Inductivo x = h + 1
+
+HI) factorial h = product (countFrom h) 
+TI) factorial (h+1) = product (countFrom (h+1))
+
+factorial (h+1) 
+= (def factorial)
+(h+1) * factorial h 
+= (HI)
+(h+1) * product (countFrom h)
+= (def product)
+product ((h+1) * countFrom h)
+= (def countFrom)
+product (countFrom (h+1))
+
+QED
+
+-----------------------------------------------
+
+2)
+
+length = sum . map (const 1)
+
+Principio de extensionalidad
+
+length xs = (sum . map (const 1)) xs
+
+(def (.))
+
+length xs = sum (map (const 1) xs)
+
+Voy a demostrar demostrar por inducción estructural en xs
+
+Caso base xs = []
+
+length [] 
+= (def length)
+0
+
+sum (map (const 1) [])
+= (def map)
+sum []
+= (def sum)
+0
+
+Caso inductivo xs = (h:hs)
+
+HI) length xs = sum (map (const 1) hs)
+TI) length (h:hs) = sum (map (const 1) (h:hs))
+
+sum (map (const 1) (h:hs))
+= (def map)
+sum (const 1 h : map (const 1) hs)
+= (def const)
+sum (1 : map (const 1) hs)
+= (def sum)
+1 + sum (map (const 1) hs)
+= HI
+1 + length hs
+= (def length)
+length (h:hs)
+
+QED
+
+-----------------------------------------------
+
+3)
+
+elem = any . (==)
+
+elem :: Eq a => a -> [a] -> Bool
+elem y [] = False
+elem y (x:xs) = y == x || elem y xs
+
+principio de extensionalidad
+
+elem y = (any . (==)) y
+
+def .
+
+elem y = any (y ==)
+
+principio de extensionalidad
+
+elem y xs = any (y==) xs
+
+Voy a demostrar demostrar por inducción estructural en xs
+
+Caso base xs = []
+
+elem y []
+= (def elem)
+False
+
+any (y==) []
+= (def any)
+False
+
+Caso inductivo xs = (h:hs)
+
+HI) elem y hs = any (y==) hs
+TI) elem y (h:hs) = any (y==) (h:hs)
+
+any (y==) (h:hs)
+= (def any)
+y == h : any (y==) hs
+= HI
+y == h : elem y hs
+= (def elem)
+elem y (h:hs)
+
+QED
+
+-----------------------------------------------
+
+4)
+
+all f = and . map f
+
+principio de extensionalidad
+
+all f xs = (and . map f) xs
+
+def .
+
+all f xs = and (map f xs)
+
+Voy a demostrar por inducción estructural en xs
+
+Caso base xs = []
+
+all f []
+= (def all)
+True
+
+and (map f [])
+= (def map)
+and []
+= (def and)
+True
+
+Caso inductivo xs = (h:hs)
+
+HI) all f hs = and (map f hs)
+TI) all f (h:hs) = and (map f (h:hs))
+
+all f (h:hs)
+= (def all)
+f h && all f hs
+= HI
+f h && and (map f hs)
+= (def and)
+and (f h : map f hs)
+= (def map)
+and (map f (h:hs))
+
+QED
