@@ -1,4 +1,4 @@
-import Prelude hiding ((.), all, any)
+import Prelude hiding ((.), all, any, iterate)
 -- 1 Tipos
 
 --Dar tipo a las siguientes expresiones:
@@ -99,7 +99,7 @@ and' :: [Bool] -> Bool
 and' = all id
 --and' [] = True
 --and' (x:xs) = x && and' xs
---and = all (True==)
+--and' = all (True==)
 
 or' :: [Bool] -> Bool
 or' = any id
@@ -160,3 +160,16 @@ ifThenElse False _ y = y
 
 -- ¿Es posible dar una definición para estas funciones que tenga el beneficio de cortocircuito aún
 --con un orden de evaluación Eager?
+
+-- Extras
+iterate :: (a -> a) -> a -> [a]
+iterate f x = x : iterate f (f x)
+-- iterate f x = map (\n -> applyN n f x) [0..]
+
+iterate' :: (a -> a) -> a -> [a]
+iterate' f x = (map ($ x) . map ($ f) . map applyN) [0..]
+
+applyN :: Int -> (a -> a) -> a -> a
+applyN 0 f = id
+applyN n f = f . applyN (n-1) f
+-- applyN n f x = iterate f x !! n
