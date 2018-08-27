@@ -1,3 +1,4 @@
+import Prelude hiding ((.), all, any)
 -- 1 Tipos
 
 --Dar tipo a las siguientes expresiones:
@@ -40,11 +41,13 @@ alph x = \y -> y
 -- alph 1 "2"
 
 apply :: (a -> b) -> a -> b
-apply f = f
+apply = id
+--apply f = f
 -- apply (1+) 2
 
 twice :: (a -> a) -> a -> a
-twice = \f -> \x -> f (f x)
+twice f = f . f
+-- twice = \f -> \x -> f (f x)
 -- twice (1+) 3
 
 flip :: (a -> b -> c) -> b -> a -> c
@@ -82,13 +85,24 @@ filter3 f (x:xs) | f x = x : filter3 f xs
                  | otherwise = filter3 f xs
 --filter2 (>5) [1,6,2,8,9,3]
 
-all2 :: (a -> Bool) -> [a] -> Bool
-all2 f   []   = True
-all2 f (x:xs) = f x && all2 f xs
+all :: (a -> Bool) -> [a] -> Bool
+all f = and . map f
+--all f   []   = True
+--all f (x:xs) = f x && all f xs
 
-any2 :: (a -> Bool) -> [a] -> Bool
-any2 f   []   = False
-any2 f (x:xs) = f x || any2 f xs
+any :: (a -> Bool) -> [a] -> Bool
+any f = or . map f
+--any f   []   = False
+--any f (x:xs) = f x || any f xs
+
+and' :: [Bool] -> Bool
+and' = all id
+--and' [] = True
+--and' (x:xs) = x && and' xs
+--and = all (True==)
+
+or' :: [Bool] -> Bool
+or' = any id
 
 takeWhile2 :: (a -> Bool) -> [a] -> [a]
 takeWhile2 f   []   = []
