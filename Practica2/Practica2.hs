@@ -1,4 +1,4 @@
-import Prelude hiding ((.), all, any, iterate)
+import Prelude hiding ((.), all, any, iterate, flip)
 -- 1 Tipos
 
 --Dar tipo a las siguientes expresiones:
@@ -167,9 +167,57 @@ iterate f x = x : iterate f (f x)
 -- iterate f x = map (\n -> applyN n f x) [0..]
 
 iterate' :: (a -> a) -> a -> [a]
-iterate' f x = (map ($ x) . map ($ f) . map applyN) [0..]
+iterate' f x = map (\y -> applyN y f x) [0..]
+--iterate' f x = (map ($ x) . map ($ f) . map applyN) [0..]
+--                                        [1,2,3,4,5,6]
 
 applyN :: Int -> (a -> a) -> a -> a
 applyN 0 f = id
 applyN n f = f . applyN (n-1) f
 -- applyN n f x = iterate f x !! n
+
+--subset [1,2] [1,2,3] = True
+--subset [1,2] [1,3,6] = False
+subset :: Eq a => [a] -> [a] -> Bool
+subset = flip (all . flip elem)
+--subset [] _ = True
+--subset _ [] = False
+--subset (x:xs) ys = elem x ys && subset xs ys
+
+-- Mapa de tesoros
+
+data Dir = Izq | Der
+
+data Objeto = Tesoro | Chatarra
+
+data Mapa = Cofre Objeto | Bifurcacion Objeto Mapa Mapa
+
+--Indica si hay un tesoro en alguna parte del mapa.
+hayTesoro :: Mapa -> Bool
+hayTesoro (Cofre x)             = esTesoro x 
+hayTesoro (Bifurcacion x m1 m2) = esTesoro x || hayTesoro m1 || hayTesoro m2
+--hayTesoro (Bifurcacion Chatarra (Bifurcacion Chatarra (Cofre Chatarra) (Cofre Chatarra)) (Bifurcacion Chatarra (Bifurcacion Chatarra (Cofre Tesoro) (Cofre Chatarra)) (Cofre Chatarra)))
+
+esTesoro :: Objeto -> Bool
+esTesoro Tesoro = True
+esTesoro    _   = False  
+
+--Indica si al final del camino hay un tesoro. Nota: el final del camino es la lista vacía de direcciones.
+hayTesoroEn :: [Dir] -> Mapa -> Bool
+hayTesoroEn    []    (Cofre x)            = esTesoro x
+hayTesoroEn    []    (Bifurcacion x _ _)  = esTesoro x
+hayTesoroEn (Izq:xs) (Bifurcacion _ m1 _) = hayTesoroEn xs m1
+hayTesoroEn (Der:xs) (Bifurcacion _ _ m2) = hayTesoroEn xs m2
+--hayTesoroEn [Der,Izq,Izq] (Bifurcacion Chatarra (Bifurcacion Chatarra (Cofre Chatarra) (Cofre Chatarra)) (Bifurcacion Chatarra (Bifurcacion Chatarra (Cofre Tesoro) (Cofre Chatarra)) (Cofre Chatarra)))
+
+--Indica el camino al tesoro. Precondición: hay un sólo tesoro en el mapa.
+--caminoAlTesoro :: Mapa -> [Dir]
+
+--Indica el camino de la rama más larga.
+--caminoRamaMasLarga :: Mapa -> [Dir]
+
+--Devuelve los tesoros separados por nivel en el árbol.
+--tesorosPerLevel :: Mapa -> [[Objecto]]
+
+--Devuelve todos lo caminos en el mapa.
+--todosLosCaminos :: Mapa -> [[Dir]]
