@@ -1,5 +1,5 @@
 --Lambda Booleans
---Dada las siguientes deniciones que representan a los booleanos mediante funciones:
+--Dada las siguientes definiciones que representan a los booleanos mediante funciones:
 
 type BoolLam a = a -> a -> a
 
@@ -14,22 +14,23 @@ ifThenElseLam = \ x -> x
 notLam = \ x -> ifThenElseLam x falseLam trueLam
 
 --Definir las siguientes operaciones (que se comportan como sus contrapartes booleanas):
---orLam :: BoolLam -> BoolLam -> BoolLam
+--orLam :: BoolLam a -> BoolLam a -> BoolLam a
+
 --andLam :: BoolLam -> BoolLam -> BoolLam
 
 --Lambda Pairs
 --Dada la siguiente definición de pairLam que representa a los pares mediante funciones 
 --(e.g. (pairLam 1 True) es una expresión que denota el par (1,True) ):
 
-data Either' a b = Left' a | Right' b
+--data Either' a b = Left' a | Right' b
 
-type Projector a b = a -> b -> Either' a b
+type Projector a b = a -> b -> Either a b
 
-left = \ x y -> Left' x
+left = \ x y -> Left x
 
-right = \ x y -> Right' y
+right = \ x y -> Right y
 
-type PairLam a b = a -> b -> Projector a b -> Either' a b
+type PairLam a b = a -> b -> Projector a b -> Either a b
 
 pairLam = \ x y p -> p x y
 
@@ -42,10 +43,25 @@ pairLam = \ x y p -> p x y
 --sndLam :: PairLam a b -> Either' a b 
 
 --Lambda Sets
+
+type Set a = a -> Bool
+
+belongs :: a -> Set a -> Bool
+belongs x s = s x
+--belongs 2 (1==)
+
+singleton :: Eq a => a -> Set a
+singleton = (==)
+
+--complement :: Set a -> Set a
+
 --Defina las siguientes operaciones para conjuntos representados por extensión (como [a] ) y
 --alternativamente por comprensión (como predicado a -> Bool ) cuando sea posible.
 
---union :: Set a -> Set a -> Set a
+union :: Set a -> Set a -> Set a
+union s1 s2 = \x -> (s1 x) && (s2 x)
+--union (2<) (6>) 3
+
 --intersect :: Set -> Set a -> Set a
 --complement :: Set a -> Set a
 --cardinal :: Set a -> Nat
