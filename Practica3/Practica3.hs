@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 --Lambda Booleans
 --Dada las siguientes definiciones que representan a los booleanos mediante funciones:
 
@@ -15,8 +17,10 @@ notLam = \ x -> ifThenElseLam x falseLam trueLam
 
 --Definir las siguientes operaciones (que se comportan como sus contrapartes booleanas):
 --orLam :: BoolLam a -> BoolLam a -> BoolLam a
+orLam b1 b2 = b1 trueLam b2
 
---andLam :: BoolLam -> BoolLam -> BoolLam
+--andLam :: BoolLam a -> BoolLam a -> BoolLam a
+andLam b1 b2 = b1 b2 falseLam
 
 --Lambda Pairs
 --Dada la siguiente definición de pairLam que representa a los pares mediante funciones 
@@ -106,3 +110,4 @@ type Fuzzy a = a -> Float
 --Retorna el numeral que representa el producto de otros dos.
 --mul :: Numeral a -> Numeral a -> Numeral a 
 
+main = print( belongs 2 (1==) )
