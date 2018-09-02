@@ -34,40 +34,66 @@ fromInt x = applyN x succ
 
 type Map k v = (k -> Maybe v)
 
---lookupM :: Eq k => k -> Map k v -> Maybe v
+lookupM :: Eq k => k -> Map k v -> Maybe v
+lookupM k m = m k
+--lookupM 1 emptyM
 
---emptyM :: Map k v
+emptyM :: Map k v
+emptyM = \k -> Nothing
 
---assocM :: Eq k => k -> v -> Map k v -> Map k v  
+assocM :: Eq k => k -> v -> Map k v -> Map k v  
+assocM k v m = \k' -> if k == k' then Just v else m k'
+--lookupM 1 (assocM 2 "b" (assocM 1 "a" emptyM))
 
---deleteM :: Eq k => k -> Map k v -> Map k v
-
--- domM :: Map k v -> [k]
--- domM m = ??
+deleteM :: Eq k => k -> Map k v -> Map k v
+deleteM k m = \k' -> if k == k' then Nothing else m k'
+--lookupM 1 (deleteM 1 (assocM 2 "b" (assocM 1 "a" emptyM)))
+--lookupM 2 (deleteM 1 (assocM 2 "b" (assocM 1 "a" emptyM)))
 
 -------------------------------------------------------------
 
 type DList a = ([a] -> [a])
 
---nil :: DList a
+nil :: DList a
+nil = id
 
---toList :: DList a -> [a]
+toList :: DList a -> [a]
+toList xs = xs []
 
---fromList :: [a] -> DList a
+fromList :: [a] -> DList a
+fromList xs = (++ xs) 
+--toList (fromList [1,2,3,4,5,6])
 
---cons :: a -> DList a -> DList a
+cons :: a -> DList a -> DList a
+cons x = (.) (x:)
+--toList (cons 2 (cons 1 nil))
 
---snoc :: DList a -> a -> DList a
+snoc :: DList a -> a -> DList a
+snoc xs x = xs . (x:)
+--toList (snoc (cons 1 (cons 2 nil)) 3)
 
---singleton :: a -> DList a
+singleton :: a -> DList a
+singleton = snoc nil
+--singleton x = (x:)
+--toList (singleton 2)
 
---append :: DList a -> DList a -> DList a
+append :: DList a -> DList a -> DList a
+append = flip (.)
+--append xs ys = ys . xs
+--toList (append (fromList [1,2,3]) (fromList [4,5,6]))
 
---concat :: [DList a] -> DList a
+concat :: [DList a] -> DList a
+concat    []    = id
+concat (xs:xss) = append xs (concat xss) 
+--toList (concat [(fromList [1,2,3]), (fromList [4,5,6])])
 
---head' :: DList a -> a
+head' :: DList a -> a
+head' xs = head (toList xs)
+--head' (fromList [1,2,3])
 
---tail' :: DList a -> DList a
+tail' :: DList a -> DList a
+tail' xs = fromList (tail (toList xs))
+--toList (tail' (fromList [1,2,3]))
 
 -------------------------------------------------------------
 
