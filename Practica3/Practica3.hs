@@ -1,5 +1,7 @@
 {-# LANGUAGE RankNTypes #-}
 
+
+
 --Lambda Booleans
 --Dada las siguientes definiciones que representan a los booleanos mediante funciones:
 
@@ -30,18 +32,24 @@ andLam b1 b2 = b1 b2 falseLam
 
 type Projector a b = a -> b -> Either a b
 
+left:: a -> b -> Either a b 
 left = \ x y -> Left x
 
+right:: a -> b -> Either a b
 right = \ x y -> Right y
 
 type PairLam a b = a -> b -> Projector a b -> Either a b
 
+pairLam:: a -> b -> Projector a b -> Either a b
 pairLam = \ x y p -> p x y
 
 --Definir las siguientes operaciones (que se comportan como las proyecciones de las componentes del par):
 
---(e.g. fstLam (pairLam 1 True) debería retornar (Left 1) ).
---fstLam :: PairLam a b -> Either' a b
+--(e.g. fstLam (pairLam 1 2) debería retornar (Left 1) ).
+--fstLam :: PairLam a b -> Either a b
+fstLam f = f left 
+sndLam f = f right
+
 
 --(e.g. fstLam (pairLam 1 True) debería retornar (Right True) ).
 --sndLam :: PairLam a b -> Either' a b 
@@ -50,25 +58,43 @@ pairLam = \ x y p -> p x y
 
 type Set a = a -> Bool
 
-belongs :: a -> Set a -> Bool
-belongs x s = s x
---belongs 2 (1==)
+belongs ::Set a -> a -> Bool
+belongs  = id  
+
+belongs' :: a -> Set a -> Bool
+belongs' x f = ( f . id) x
 
 singleton :: Eq a => a -> Set a
-singleton = (==)
+singleton  = (==)
 
---complement :: Set a -> Set a
 
 --Defina las siguientes operaciones para conjuntos representados por extensión (como [a] ) y
 --alternativamente por comprensión (como predicado a -> Bool ) cuando sea posible.
 
 union :: Set a -> Set a -> Set a
-union s1 s2 = \x -> (s1 x) && (s2 x)
---union (2<) (6>) 3
+union s1 s2 = \x -> (s1 x) || (s2 x)
 
---intersect :: Set -> Set a -> Set a
---complement :: Set a -> Set a
+
+intersect :: Set a -> Set a -> Set a
+intersect s1 s2 = \x -> (s1 x) && (s2 x)
+
+--Devuelve los elementos que no estan en el set 
+complement  :: Set a -> Set a
+complement  =  (.) not  
+
+--Mala leche 
 --cardinal :: Set a -> Nat
+
+-- image:: Set (a,b) -> a -> Set b
+-- image s x = \y - >  s(x,y) 
+-- image = \s -> curry s
+-- image = curry
+
+--  odds :: Set Int
+--  odds = odd     
+  
+
+
 
 --Fuzzy Sets
 --Un conjunto difuso (o fuzzy set en inglés) indica para cada elemento x un nivel de certeza de
@@ -76,13 +102,16 @@ union s1 s2 = \x -> (s1 x) && (s2 x)
 --elemento no pertenece al conjunto y 1 indica que con certeza el elemento sí pertenece al conjunto).
 --Considere una representación de fuzzy sets mediante funciones:
 
-type Fuzzy a = a -> Float
+--type Fuzzy a = a -> Float
 
 --Y defina la siguientes operaciones:
+
 --belongs :: Fuzzy a -> a -> Float
 --complement :: Fuzzy a -> Fuzzy a
 --union :: Fuzzy a -> Fuzzy a -> Fuzzy a
 --intersect :: Fuzzy -> Fuzzy a -> Fuzzy a
+
+
 
 --Church Numerals
 
@@ -90,24 +119,32 @@ type Fuzzy a = a -> Float
 --senta mediante n composiciones de una función f , es decir, la repetición de n aplicaciones sucesivas
 --de la función f ):
 
---type Numeral a = ( a -> a ) -> a -> a
+applyN :: Int -> (a -> a) -> a -> a
+applyN 0 f = id
+applyN n f = f . applyN (n-1) f
 
---zero = \ f x -> x -- 0 aplicaciones de la funcion f
 
---succ n = \ f x -> f ( n f x) -- 1 aplicacion mas de la funcion f
+type Numeral = ( Int -> Int ) -> Int -> Int
+
+zero' = \ f x -> x -- 0 aplicaciones de la funcion f
+
+succ' n = \ f x -> f ( n f x) -- 1 aplicacion mas de la funcion f
 
 --Defina la siguientes operaciones:
 
 --Retorna el numeral que representa a un número dado.
---church :: Nat -> Numeral Nat
+
+
+-- church :: Int -> Numeral Int
+-- church x = applyN x succ'
+
 
 --Retorna el entero representado por un numeral.
---unchurch :: Numeral Nat -> Nat
+-- unchurch :: Numeral  -> Int
+-- unchurch f = f 0  
 
 --Retorna el numeral que representa la suma de otros dos.
 --add :: Numeral a -> Numeral a -> Numeral a
 
 --Retorna el numeral que representa el producto de otros dos.
 --mul :: Numeral a -> Numeral a -> Numeral a 
-
-main = print( belongs 2 (1==) )
