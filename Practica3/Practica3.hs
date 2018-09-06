@@ -1,7 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
 
-
-
 --Lambda Booleans
 --Dada las siguientes definiciones que representan a los booleanos mediante funciones:
 
