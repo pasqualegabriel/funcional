@@ -26,32 +26,75 @@ fibAux n f s = fibAux (n-1) s (f+s)
 data TipTree a = Tip a | Join ( TipTree a ) ( TipTree a )
 
 -- a) heightTip que devuelve la longitud del camino más largo desde la raíz hasta una hoja.
+heightTip :: TipTree a -> Int
+heightTip  (Tip _)   = 1
+heightTip (Join x y) = max (1 + heightTip x) (1 + heightTip y)
+--heightTip (Join (Join (Join (Tip 3) (Tip 3)) (Tip 1)) (Join (Tip 5) (Tip 6)))
+
 -- b) leaves que calcula el número de hojas.
+leavesTip :: TipTree a -> Int
+leavesTip  (Tip _)   = 1
+leavesTip (Join x y) = leavesTip x + leavesTip y
+--leavesTip (Join (Join (Join (Tip 3) (Tip 3)) (Tip 1)) (Join (Tip 5) (Tip 6)))
+
 -- c) nodes que calcula en número de nodos que no son hojas.
+nodesTip :: TipTree a -> Int
+nodesTip  (Tip _)   = 0
+nodesTip (Join x y) = 1 + (nodesTip x) + (nodesTip y)
+--nodesTip (Join (Join (Join (Tip 3) (Tip 3)) (Tip 1)) (Join (Tip 5) (Tip 6)))
+
 -- d) walkover que devuelve la lista de las hojas de un árbol, leídas de izquierda a derecha.
+walkoverTip :: TipTree a -> [a]
+walkoverTip  (Tip x)   = [x] 
+walkoverTip (Join x y) = walkoverTip x ++ walkoverTip y
+--walkoverTip (Join (Join (Join (Tip 1) (Tip 2)) (Tip 3)) (Join (Tip 4) (Tip 5)))
+
 -- e) mirrorTip que calcula la imagen especular del árbol, o sea, el árbol obtenido intercambiando
 -- los subárboles izquierdo y derecho de cada nodo.
+mirrorTip :: TipTree a -> TipTree a
+mirrorTip (Join x y) = Join (mirrorTip y) (mirrorTip x)
+mirrorTip t = t
+--mirrorTip (Join (Join (Join (Tip 1) (Tip 2)) (Tip 3)) (Join (Tip 4) (Tip 5)))
+
 -- f) mapTip que toma una función y un árbol, y devuelve el árbol que se obtiene del dado al
 -- aplicar la función a cada nodo.
+mapTip :: (a -> b) -> TipTree a -> TipTree b
+mapTip f  (Tip x)   = Tip (f x)
+mapTip f (Join x y) = Join (mapTip f x) (mapTip f y)
+--mapTip (10+) (Join (Join (Join (Tip 1) (Tip 2)) (Tip 3)) (Join (Tip 4) (Tip 5)))
 
 -- Polinomios
 -- Considere la siguiente representación de polinomios con coeficientes enteros:
 -- Con la que por ejemplo el polinomio P(x) = x^2 + 3x + 5 puede representarse de la siguiente manera:
--- Add (Mul Var' Var') (Add (Mul (Cte 3) Var') Cte 5)
+-- Add (Mul VarP VarP) (Add (Mul (Cte 3) VarP) (Cte 5))
 -- Escriba las siguientes funciones:
 
-data Poli = Cte Int | Var' | Add Poli Poli | Mul Poli Poli
+data Poli = Cte Int | VarP | Add Poli Poli | Mul Poli Poli
 
 -- retorna el resultado de evaluar un polinomio P con un valor x dado (P(x)).
--- eval :: Poli -> Int -> Int
+evalP :: Poli -> Int -> Int
+evalP (Cte x)   n = x
+evalP  VarP     n = n
+evalP (Add x y) n = evalP x n + evalP y n
+evalP (Mul x y) n = evalP x n * evalP y n
+--evalP (Add (Mul VarP VarP) (Add (Mul (Cte 3) VarP) (Cte 5))) 2
 
 -- retorna el polinomio obtenido luego de multiplicar cada constante y variable por un valor entero.
--- mEscalar :: Poli -> Int -> Poli
+mEscalar :: Poli -> Int -> Poli
+mEscalar (Cte x)   n = Mul (Cte x) (Cte n)
+mEscalar  VarP     n = Mul VarP (Cte n)
+mEscalar (Add x y) n = Add (mEscalar x n) (mEscalar y n)
+mEscalar (Mul x y) n = Mul (mEscalar x n) (mEscalar y n)
+--mEscalar (Add (Mul VarP VarP) (Add (Mul (Cte 3) VarP) (Cte 5))) 2
 
 -- retorna un polinomio equivalente al tomado como parámetro pero donde las operaciones
 -- de suma y multiplicación entre constantes ya fueron resueltas, es decir, un polinomio en donde
 -- no existen constructores de la forma Add (Cte _) (Cte _) ni Mul (Cte _) (Cte _)
--- sOptimize :: Poli -> Poli
+sOptimize :: Poli -> Poli
+sOptimize (Add (Cte x) (Cte y)) = Cte (x+y)
+sOptimize (Mul (Cte x) (Cte y)) = Cte (x*y)
+sOptimize x = x
+--sOptimize (Add (Mul (Cte 3) (Cte 3)) (Add (Cte 5) (Mul VarP (Cte 3))))
 
 -- Fórmulas lógicas
 -- Considere la siguiente representación de expresiones lógicas:
