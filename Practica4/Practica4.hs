@@ -93,6 +93,8 @@ mEscalar (Mul x y) n = Mul (mEscalar x n) (mEscalar y n)
 sOptimize :: Poli -> Poli
 sOptimize (Add (Cte x) (Cte y)) = Cte (x+y)
 sOptimize (Mul (Cte x) (Cte y)) = Cte (x*y)
+sOptimize (Add x y) = sOptimize (Add (sOptimize x) (sOptimize y))
+sOptimize (Mul x y) = sOptimize (Mul (sOptimize x) (sOptimize y))
 sOptimize x = x
 --sOptimize (Add (Mul (Cte 3) (Cte 3)) (Add (Cte 5) (Mul VarP (Cte 3))))
 
@@ -182,7 +184,7 @@ data Seq a = Nil | Unit a | Cat (Seq a) (Seq a)
 -- Dado el siguiente tipo para árboles generales (árboles con una cantidad arbitraria de hijos en cada nodo):
 -- Definir las siguientes funciones:
 
-data GenTree a = GNode a [ GenTree a ]
+data GenTree a = GNode a [GenTree a]
 
 -- retorna la cantidad de elementos en el árbol.
 -- sizeGT :: GenTree a -> Int
