@@ -187,10 +187,16 @@ data Seq a = Nil | Unit a | Cat (Seq a) (Seq a)
 data GenTree a = GNode a [GenTree a]
 
 -- retorna la cantidad de elementos en el árbol.
--- sizeGT :: GenTree a -> Int
+sizeGT :: GenTree a -> Int
+sizeGT (GNode e [])     = 1
+sizeGT (GNode e (x:xs)) = sizeGT x + sizeGT (GNode e xs)
+--sizeGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 []), (GNode 8 [])])]), (GNode 9 [])])
 
 -- retorna la altura del árbol.
--- heightGT :: GenTree a -> Int
+heightGT :: GenTree a -> Int
+heightGT (GNode e [])     = 1
+heightGT (GNode e (x:xs)) = max (1 + heightGT x) (heightGT (GNode e xs))
+--heightGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 2 [(GNode 3 []), (GNode 3 [(GNode 4 [(GNode 5 [])]), (GNode 4 [])])]), (GNode 9 [])])
 
 -- calcula la imagen especular del árbol.
 -- mirrorGT :: GenTree a -> GenTree a
