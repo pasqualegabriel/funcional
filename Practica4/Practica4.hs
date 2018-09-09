@@ -96,7 +96,7 @@ sOptimize (Mul (Cte x) (Cte y)) = Cte (x*y)
 sOptimize (Add x y) = sOptimize (Add (sOptimize x) (sOptimize y))
 sOptimize (Mul x y) = sOptimize (Mul (sOptimize x) (sOptimize y))
 sOptimize x = x
---sOptimize (Add (Mul (Cte 3) (Cte 3)) (Add (Cte 5) (Mul VarP (Cte 3))))
+--sOptimize (Add (Mul (Cte 3) (Cte 3)) (Add (Cte 5) (Mul (Cte 2) (Cte 3))))
 
 -- Fórmulas lógicas
 -- Considere la siguiente representación de expresiones lógicas:
@@ -209,3 +209,67 @@ heightGT (GNode e (x:xs)) = max (1 + heightGT x) (heightGT (GNode e xs))
 
 -- retorna todos los elementos en un nivel dado del árbol.
 -- levelNGT :: GenTree a -> Int -> [a]
+
+data FileSystem = File String String | Folder String [FileSystem]
+
+cantFiles :: FileSystem -> Int
+cantFiles (File   _ _)  = 1
+cantFiles (Folder _ xs) = cantFilesAux xs
+--cantFiles (Folder "Folder1" [(File "File11" "11"), (Folder "Folder11" [(Folder "Folder111" [(File "File1111" "1111")]), (Folder "Folder112" [(File "File1112" "1112")])]), (Folder "Folder12" [(File "File121" "121")])])
+
+cantFilesAux :: [FileSystem] -> Int
+cantFilesAux   []   = 0
+cantFilesAux (x:xs) = cantFiles x + cantFilesAux xs
+
+findFile :: String -> FileSystem -> Maybe String
+findFile n (File   x y)  = if n == x then Just y else Nothing
+findFile n (Folder x xs) = findFileAux n xs
+--findFile "f2" (Folder "F1" [(Folder "F2" [(File "f1" "1")]), (File "f2" "2"), (Folder "F3" [(File "f3" "3"), (Folder "F4" [])])])
+
+findFileAux :: String -> [FileSystem] -> Maybe String
+findFileAux n   []   = Nothing
+findFileAux n (x:xs) = isTheFile (findFile n x) (findFileAux n xs)
+
+isTheFile :: Maybe String -> Maybe String -> Maybe String
+isTheFile j@(Just x) _ = j
+isTheFile _ j@(Just x) = j
+isTheFile   _    _     = Nothing
+
+-- Precondición: el archivo existe
+route :: String -> FileSystem -> [Int]
+route n (File   x y)  = []
+route n (Folder x xs) = routeAux 0 n xs
+--route "f5" (Folder "F1" [(Folder "F2" [(File "f1" "1")]), (File "f2" "2"), (Folder "F3" [(File "f3" "3"), (Folder "F4" [(File "f4" "4"), (File "f5" "5")])])])
+
+routeAux :: Int -> String -> [FileSystem] -> [Int]
+routeAux i n  [x]   = i : route n x
+routeAux i n (x:xs) = if isNothing (findFile n x) then routeAux (i + 1) n xs else i : route n x
+
+isNothing Nothing = True
+isNothing    _    = False
+
+-- Precondición: el archivo existe
+routeTo :: String -> FileSystem -> [String]
+routeTo n (File   x y)  = []
+routeTo n (Folder x xs) = routeToAux x n xs
+--routeTo "f5" (Folder "F1" [(Folder "F2" [(File "f1" "1")]), (File "f2" "2"), (Folder "F3" [(File "f3" "3"), (Folder "F4" [(File "f4" "4"), (File "f5" "5")])])])
+
+routeToAux :: String -> String -> [FileSystem] -> [String]
+routeToAux y n  [x]   = y : routeTo n x
+routeToAux y n (x:xs) = if isNothing (findFile n x) then routeToAux y n xs else y : routeTo n x
+
+mapContents :: [(String, String -> String)] -> FileSystem -> FileSystem
+mapContents   []   y = y
+mapContents (x:xs) y = applyContent x (mapContents xs y)
+--mapContents [("f2", ("f2"++)), ("f3", ("f3"++)), ("f5", ("f5"++))] (Folder "F1" [(Folder "F2" [(File "f1" "1")]), (File "f2" "2"), (Folder "F3" [(File "f3" "3"), (Folder "F4" [(File "f4" "4"), (File "f5" "5")])])])
+
+applyContent :: (String, String -> String) -> FileSystem -> FileSystem
+applyContent (n, f) a@(File   x y)  = if n == x then File x (f y) else a
+applyContent (n, f)   (Folder x xs) = Folder x (applyContentAux n f xs)
+
+applyContentAux :: String -> (String -> String) -> [FileSystem] -> [FileSystem]
+applyContentAux n f  [x]   = [applyContent (n, f) x]
+applyContentAux n f (x:xs) = if isNothing (findFile n x)
+                             then x : applyContentAux n f xs
+                             else (applyContent (n, f) x) : xs
+
