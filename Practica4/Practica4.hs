@@ -188,34 +188,74 @@ data Seq a = Nil | Unit a | Cat (Seq a) (Seq a)
 -- Definir las siguientes operaciones:
 
 -- toma dos secuencias y devuelve su concatenación.
--- appSeq :: Seq a -> Seq a -> Seq a
+appSeq :: Seq a -> Seq a -> Seq a
+appSeq Nil x = x
+appSeq x Nil = x
+appSeq x  y  = Cat x y
 
 -- toma un elemento y una secuencia y devuelve la secuencia que tiene al elemento dado
 -- como cabeza y a la secuencia dada como cola.
--- conSeq :: a -> Seq a -> Seq a
+conSeq :: a -> Seq a -> Seq a
+conSeq x Nil = Unit x
+conSeq x  y  = Cat (Unit x) y
 
 -- calcula la cantidad de elementos de una secuencia.
--- lenSeq :: Seq a -> Int
+lenSeq :: Seq a -> Int
+lenSeq   Nil     = 0
+lenSeq (Unit _)  = 1
+lenSeq (Cat x y) = lenSeq x + lenSeq y
+--lenSeq (Cat (Cat (Unit 1) Nil) (Cat (Cat Nil (Unit 2)) (Cat (Unit 3) (Cat (Unit 4) Nil))))
 
 -- toma una secuencia e invierte sus elementos.
--- revSeq :: Seq a -> Seq a
+revSeq :: Seq a -> Seq a
+revSeq (Cat x y) = Cat (revSeq y) (revSeq x) 
+revSeq    s      = s
+--revSeq (Cat (Cat (Unit 1) Nil) (Cat (Cat Nil (Unit 2)) (Cat (Unit 3) (Cat (Unit 4) Nil))))
 
 -- toma una secuencia y devuelve su primer elemento (es decir el de más a la izquierda).
--- headSeq :: Seq a -> a
+-- precondicion: hay al menos un elemento
+headSeq :: Seq a -> a
+headSeq (Unit x)    = x
+headSeq (Cat Nil y) = headSeq y
+headSeq (Cat x _)   = headSeq x
+-- headSeq (Cat (Cat (Unit 1) Nil) (Cat (Cat Nil (Unit 2)) (Cat (Unit 3) (Cat (Unit 4) Nil))))
+-- headSeq (revSeq (Cat (Cat (Unit 1) Nil) (Cat (Cat Nil (Unit 2)) (Cat (Unit 3) (Cat (Unit 4) Nil)))))
 
 -- remueve la cabeza de una secuencia.
--- tailSeq :: Seq a -> Seq a
+tailSeq :: Seq a -> Seq a
+tailSeq   Nil            = Nil
+tailSeq (Unit _)         = Nil
+tailSeq (Cat (Unit _) y) = y
+tailSeq (Cat Nil y)      = tailSeq y
+tailSeq (Cat x y)        = Cat (tailSeq x) y
+-- tailSeq (Cat (Cat (Unit 1) Nil) (Cat (Cat Nil (Unit 2)) (Cat (Unit 3) (Cat (Unit 4) Nil))))
+-- tailSeq (revSeq (Cat (Cat (Unit 1) Nil) (Cat (Cat Nil (Unit 2)) (Cat (Unit 3) (Cat (Unit 4) Nil)))))
 
 -- elimina todos los Nil s innecesarios de una secuencia.
 -- Por ejemplo, normSeq (Cat (Cat Nil (Unit 1)) Nil) = Unit 1
--- normSeq :: Seq a -> Seq a
+normSeq :: Seq a -> Seq a
+normSeq (Cat Nil y) = normSeq y
+normSeq (Cat x Nil) = normSeq x
+normSeq (Cat x y)   = Cat (normSeq x) (normSeq y)
+normSeq    x        = x
+-- normSeq (Cat (Cat Nil (Unit 1)) Nil)
+-- normSeq (Cat (Cat (Unit 1) Nil) (Cat (Cat Nil (Unit 2)) (Cat (Unit 3) (Cat (Unit 4) Nil))))
 
 -- toma dos secuencias y devuelve True si ambas contienen los mismos valores, en el mismo
 -- orden y en la misma cantidad.
--- eqSeq :: Seq a -> Seq a -> Bool
+eqSeq :: Eq a => Seq a -> Seq a -> Bool
+eqSeq   Nil         Nil       = True 
+eqSeq (Unit x)    (Unit y)    = x == y
+eqSeq (Cat x1 y1) (Cat x2 y2) = eqSeq x1 x2 && eqSeq y1 y2
+eqSeq _ _ = False
+-- eqSeq (Cat (Cat Nil (Unit 1)) Nil) (Cat (Cat Nil (Unit 1)) Nil)
 
 -- toma una secuencia y devuelve una lista con los mismos elementos, en el mismo orden.
--- seq2List :: Seq a -> [a]
+seq2List :: Seq a -> [a]
+seq2List    Nil    = []
+seq2List (Unit x)  = [x]
+seq2List (Cat x y) = seq2List x ++ seq2List y
+-- seq2List (Cat (Cat (Unit 1) Nil) (Cat (Cat Nil (Unit 2)) (Cat (Unit 3) (Cat (Unit 4) Nil))))
 
 -- ¿Qué ventajas y desventajas encuentra sobre (Seq a) respecto a las listas de Haskell ([a])?
 
