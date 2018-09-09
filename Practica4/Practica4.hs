@@ -12,13 +12,6 @@ fibAux :: Int -> Int -> Int -> Int
 fibAux 0 f s = f
 fibAux n f s = fibAux (n-1) s (f+s)  
 
--- Listas
--- Para las funciones del ejercicio 5 de la práctica 1 (funciones sobre listas), determine:
--- a) Cuáles definió por recursión estructural.
--- b) Cuáles definió por recursión a la cola.
--- c) Cuáles definió por recursión lineal.
--- d) Cuáles siempre terminan (justifique).
-
 -- Arboles
 -- Dada la siguiente definición para árboles (que sólo contiene datos en las hojas):
 -- Definir y dar el tipo de las siguientes funciones:
@@ -91,29 +84,32 @@ mEscalar (Mul x y) n = Mul (mEscalar x n) (mEscalar y n)
 -- de suma y multiplicación entre constantes ya fueron resueltas, es decir, un polinomio en donde
 -- no existen constructores de la forma Add (Cte _) (Cte _) ni Mul (Cte _) (Cte _)
 sOptimize :: Poli -> Poli
-sOptimize (Add (Cte x) (Cte y)) = Cte (x+y)
-sOptimize (Mul (Cte x) (Cte y)) = Cte (x*y)
-sOptimize (Add x y) = sOptimize (Add (sOptimize x) (sOptimize y))
-sOptimize (Mul x y) = sOptimize (Mul (sOptimize x) (sOptimize y))
+sOptimize (Add (Cte x) (Cte y)) = Cte (x + y)
+sOptimize (Mul (Cte x) (Cte y)) = Cte (x * y)
+sOptimize a@(Add x y) = if canOptimize x || canOptimize y 
+                        then sOptimize (Add (sOptimize x) (sOptimize y))
+                        else a
+sOptimize m@(Mul x y) = if canOptimize x || canOptimize y 
+                        then sOptimize (Mul (sOptimize x) (sOptimize y))
+                        else m
 sOptimize x = x
 --sOptimize (Add (Mul (Cte 3) (Cte 3)) (Add (Cte 5) (Mul (Cte 2) (Cte 3))))
+--sOptimize (Add (Mul (Cte 3) (Cte 3)) (Add (Cte 5) (Mul VarP (Cte 3))))
+
+canOptimize :: Poli -> Bool
+canOptimize (Add (Cte x) (Cte y)) = True
+canOptimize (Mul (Cte x) (Cte y)) = True
+canOptimize (Add x y) = canOptimize x || canOptimize y
+canOptimize (Mul x y) = canOptimize x || canOptimize y
+canOptimize x = False
 
 -- Fórmulas lógicas
 -- Considere la siguiente representación de expresiones lógicas:
 
-type Variable = Int -- Identificadores enteros para variables
-
-data Logical = Var Variable        | -- una variable con un id dado
-               Not Logical         | -- la negacion de una expresion
-               And Logical Logical | -- la conjuncion de expresiones
-               Or  Logical Logical   -- la disyuncion de expresiones
-
--- Por ejemplo la expresión (x1 ∨ x2 ) ∧ (¬x3 ∨ x4 ) se puede escribir como:
+-- Por ejemplo la expresión (x1 ∨ x2) ∧ (¬x3 ∨ x4) se puede escribir como:
 -- And (Or (Var 1) (Var 2)) (Or (Not (Var 3)) (Var 4))
 -- Observe que estas expresiones no contienen constantes, para evaluarlas es necesario contar con
 -- una valuación:
-
-type Valuation = Variable -> Bool
 
 -- Una valuación es una función de Variable en Bool. Es decir, una valuación asigna a cada
 -- variable de una expresión el valor verdadero o falso.
@@ -128,15 +124,58 @@ type Valuation = Variable -> Bool
 -- True ∧ True → ∧ True
 -- Escriba las siguientes funciones:
 
+type Variable = Int -- Identificadores enteros para variables
+
+type Valuation = Variable -> Bool
+
+data Logical = Var Variable        | -- una variable con un id dado
+               Not Logical         | -- la negacion de una expresion
+               And Logical Logical | -- la conjuncion de expresiones
+               Or  Logical Logical   -- la disyuncion de expresiones
+
 -- retorna el resultado de resolver la expresión lógica con la valuación dada.
--- eval :: Logical -> Valuation -> Bool
+eval :: Logical -> Valuation -> Bool
+eval (Var v)   f = f v
+eval (Not l)   f = not (eval l f)
+eval (And x y) f = eval x f && eval y f
+eval (Or  x y) f = eval x f || eval y f
+--eval (And (Or (Var 1) (Var 2)) (Or (Not (Var 3)) (Var 4))) (==1)
 
 -- retorna la lista de todas las variables con ocurrencias en una expresión dada.
--- vars :: Logical -> [Int]
+vars :: Logical -> [Int]
+vars (Var v)   = [v]
+vars (Not l)   = vars l
+vars (And x y) = vars x ++ vars y 
+vars (Or  x y) = vars x ++ vars y
+--vars (And (Or (Var 1) (Var 2)) (Or (Not (Var 3)) (Var 4)))
 
 -- simplifica las expresiones eliminando operaciones triviales, más específicamente la doble
 -- negación y la conjunción o disyunción de variables iguales.
--- simp :: Logical -> Logical
+simp :: Logical -> Logical
+simp l@(Var v)     = l 
+simp (Not (Not l)) = simp l
+simp (Not l) = Not (simp l)
+simp l@(And x y) = if areEqual x y then simp x else
+    if canSimp x || canSimp y then simp (And (simp x) (simp y)) else l
+simp l@(Or  x y) = if areEqual x y then simp x else
+    if canSimp x || canSimp y then simp (Or  (simp x) (simp y)) else l
+--simp (And (Or (Var 1) (Var 1)) (Or (Not (Not (Not (Not (Var 1))))) (Var 1)))
+--simp (And (Or (Var 1) (Var 1)) (Or (Not (Not (Not (Var 1)))) (Var 1)))
+
+areEqual :: Logical -> Logical -> Bool
+areEqual (Var x) (Var y) = x == y
+areEqual (Not x) (Not y) = areEqual x y
+areEqual (And x y) (And x' y') = areEqual x x' && areEqual y y'
+areEqual (Or x y)  (Or  x' y') = areEqual x x' && areEqual y y'
+areEqual _ _ = False
+
+canSimp :: Logical -> Bool
+canSimp (And (Var x) (Var y)) = x == y 
+canSimp (Or  (Var x) (Var y)) = x == y 
+canSimp (And x y) = canSimp x || canSimp y  
+canSimp (Or  x y) = canSimp x || canSimp y 
+canSimp (Not (Not _)) = True
+canSimp _ = False
 
 -- Secuencias
 -- Considere la siguiente representación de secuencias:
@@ -188,27 +227,61 @@ data GenTree a = GNode a [GenTree a]
 
 -- retorna la cantidad de elementos en el árbol.
 sizeGT :: GenTree a -> Int
-sizeGT (GNode e [])     = 1
-sizeGT (GNode e (x:xs)) = sizeGT x + sizeGT (GNode e xs)
+sizeGT (GNode e xs) = 1 + sizeGTAux xs
 --sizeGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 []), (GNode 8 [])])]), (GNode 9 [])])
+
+sizeGTAux :: [GenTree a] -> Int
+sizeGTAux   []   = 0
+sizeGTAux (x:xs) = sizeGT x + sizeGTAux xs
 
 -- retorna la altura del árbol.
 heightGT :: GenTree a -> Int
-heightGT (GNode e [])     = 1
-heightGT (GNode e (x:xs)) = max (1 + heightGT x) (heightGT (GNode e xs))
---heightGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 2 [(GNode 3 []), (GNode 3 [(GNode 4 [(GNode 5 [])]), (GNode 4 [])])]), (GNode 9 [])])
+heightGT (GNode e xs) = 1 + heightGTxs xs
+--heightGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 2 [(GNode 3 []), (GNode 3 [(GNode 4 [(GNode 5 [])]), (GNode 4 [])])]), (GNode 2 [])])
+
+heightGTxs :: [GenTree a] -> Int
+heightGTxs   []   = 0
+heightGTxs (x:xs) = max (heightGT x) (heightGTxs xs)
 
 -- calcula la imagen especular del árbol.
--- mirrorGT :: GenTree a -> GenTree a
+mirrorGT :: GenTree a -> GenTree a
+mirrorGT (GNode e xs) = GNode e (mirrorGTxs xs)
+--mirrorGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 [(GNode 8 [])]), (GNode 9 [])])]), (GNode 10 [])])
+
+mirrorGTxs :: [GenTree a] -> [GenTree a]
+mirrorGTxs   []   = []
+mirrorGTxs (x:xs) = (mirrorGTxs xs) ++ [mirrorGT x]
 
 -- retorna una lista con los elementos en el árbol.
--- toListGt :: GenTree a -> [a]
+toListGT :: GenTree a -> [a]
+toListGT (GNode e xs) = e : listGT xs
+--toListGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 [(GNode 8 [])]), (GNode 9 [])])]), (GNode 10 [])])
+
+listGT :: [GenTree a] -> [a]
+listGT   []   = []
+listGT (x:xs) = toListGT x ++ listGT xs
 
 -- aplica una función dada a cada elemento en el árbol retornando uno estructuralmente equivalente.
--- mapGT :: (a -> b) -> GenTree a -> GenTree b
+mapGT :: (a -> b) -> GenTree a -> GenTree b
+mapGT f (GNode e xs) = GNode (f e) (mapGTAux f xs)
+--mapGT (10+) (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 [(GNode 8 [])]), (GNode 9 [])])]), (GNode 10 [])])
+
+mapGTAux :: (a -> b) -> [GenTree a] -> [GenTree b]
+mapGTAux f   []   = []
+mapGTAux f (x:xs) = mapGT f x : mapGTAux f xs
 
 -- retorna todos los elementos en un nivel dado del árbol.
--- levelNGT :: GenTree a -> Int -> [a]
+-- precondicion: Existe al menos un GenTree a en el nivel
+levelNGT :: Int -> GenTree a -> [a]
+levelNGT 0 (GNode e _ ) = [e]
+levelNGT n (GNode e xs) = levelNGTAux n xs
+--levelNGT 3 (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 2 [(GNode 3 []), (GNode 3 [(GNode 4 [(GNode 5 [])]), (GNode 4 [])])]), (GNode 2 [])])
+
+levelNGTAux :: Int -> [GenTree a] -> [a]
+levelNGTAux n   []   = []
+levelNGTAux n (x:xs) = levelNGT (n-1) x ++ levelNGTAux n xs
+
+-- FileSystem
 
 data FileSystem = File String String | Folder String [FileSystem]
 
