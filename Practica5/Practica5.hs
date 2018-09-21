@@ -107,14 +107,31 @@ swap (x, y) = uncurry (flip (,)) (x, y) -- Principio de extencionalidad
      (y, x) = flip (,) x y              -- def uncurry
      (y, x) = (y, x)                    -- def flip
 
--- 16
-or [x] = x || not x
+-- 2 Inducción sobre los naturales
 
--- 17
-not (x && y) = not x || not y
+EORO :: even n || odd n ≡ True
 
--- 18
-not (x || y) = not x && not y
+-- Caso Base: EORO(Z)
+even Z || odd Z = True
+  True || odd Z = True -- even .1
+           True = True -- (||).1
+
+-- Caso Inductivo:
+I Hipotesis inductiva: EORO(m)
+I Tesis inductiva: EORO(S m)
+
+even (S m) || odd (S m) = True
+     odd m || odd (S m) = True -- EVEN .2
+        odd m || even m = True -- ODD .2
+        even m || odd m = True -- CONMUT
+                  True = True  -- HI
+
+-- Ejercicio D
+gauss 0 = 0
+gauss n = n + gauss (n -1)
+
+gauss n ≡ div (n*(n+1)) 2
+gauss n ≡ div (n*(n+1)) 2 -- 
 
 
 
