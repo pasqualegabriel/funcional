@@ -130,8 +130,82 @@ even (S m) || odd (S m) = True
 gauss 0 = 0
 gauss n = n + gauss (n -1)
 
-gauss n ≡ div (n*(n+1)) 2
-gauss n ≡ div (n*(n+1)) 2 -- 
+gauss n = div (n*(n+1)) 2
 
+-- Caso Base: gauss(Z)
+gauss 0 = div (0*(0+1)) 2
+gauss 0 = 0 -- arit
+      0 = 0 -- gauss .1       
 
+-- Caso Inductivo:
+I Hipotesis inductiva: gauss(n)
+I Tesis inductiva: gauss(S n)
+
+gauss (n+1) = div ((n+1)*((n+1)+1)) 2
+
+-- 3. Inducción sobre listas
+
+-- Indique claramente el esquema inductivo de las listas. Luego, demuestre las siguientes propiedades sobre listas:
+
+-- A
+3A) length (xs ++ ys) = length xs ++ length ys
+
+EI [a] = 3A([]) ^ (Vxs: [a]) (3A(xs) => (Vx: a) (3A(x:xs)))
+
+-- Caso Base: 3A([])
+length ([] ++ ys) = length [] + length ys
+        length ys = length [] + length ys -- def (++)
+        length ys = 0 + length ys         -- def lenght .1
+        length ys = length ys             -- arit
+
+-- Caso Inductivo:
+I Hipotesis inductiva: 3A(xs)
+I Tesis inductiva: 3A(x:xs)
+
+length ((x:xs) ++ ys) = length (x:xs) + length ys
+length (x:(xs ++ ys)) = length (x:xs) + length ys -- def (++)
+1 + length (xs ++ ys) = length (x:xs) + length ys -- def length .2
+1 + length (xs ++ ys) = 1 + length xs + length ys -- def length .2
+1 + length xs ++ length ys = 1 + length xs + length ys -- HI
+
+-- B
+3B) reverse (xs ++ ys) = reverse ys ++ reverse xs
+
+EI [a] = 3B([]) ^ (Vxs: [a]) (3B(xs) => (Vx: a) (3A(x:xs)))
+
+-- Caso Base: 3B([])
+reverse ([] ++ ys) = reverse ys ++ reverse []
+        reverse ys = reverse ys ++ reverse [] -- def (++)
+        reverse ys = reverse ys ++ []         -- def reverse .1
+        reverse ys = reverse ys               -- def (++)
+
+-- Caso Inductivo:
+I Hipotesis inductiva: 3B(xs)
+I Tesis inductiva: 3B(x:xs)
+
+         reverse ((x:xs) ++ ys) = reverse ys ++ reverse (x:xs)
+         reverse (x:(xs ++ ys)) = reverse ys ++ reverse (x:xs)    -- def (++)
+      reverse (xs ++ ys) ++ [x] = reverse ys ++ reverse (x:xs)    -- def reverse .2
+      reverse (xs ++ ys) ++ [x] = reverse ys ++ reverse xs ++ [x] -- def reverse .2
+reverse ys ++ reverse xs ++ [x] = reverse ys ++ reverse xs ++ [x] -- HI
+
+-- C
+3C)      reverse . reverse = id
+    (reverse . reverse) xs = id xs -- Principio de extencionalidad
+    (reverse . reverse) xs = xs    -- def id
+      reverse (reverse xs) = xs    -- def (.)
+
+EI [a] = 3C([]) ^ (Vxs: [a]) (3C(xs) => (Vx: a) (3C(x:xs)))
+
+-- Caso Base: 3C([])
+reverse (reverse []) = []
+          reverse [] = [] -- def reverse .1
+                  [] = [] -- def reverse .1
+
+-- Caso Inductivo:
+I Hipotesis inductiva: 3C(xs)
+I Tesis inductiva: 3C(x:xs)
+
+   reverse (reverse (x:xs)) = (x:xs)
+reverse (reverse xs ++ [x]) = (x:xs) -- def reverse .2
 
