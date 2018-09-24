@@ -165,3 +165,29 @@ Join treeL treeR                                                 -- HI1 Y HI2
 mirrorTip :: TipTree a -> TipTree a
 mirrorTip (Join x y) = Join (mirrorTip y) (mirrorTip x)
 mirrorTip t = t
+
+sizeTip :: TipTree a -> Int
+sizeTip  (Tip _)   = 1
+sizeTip (Join x y) = 1 + sizeTip x + sizeTip y
+
+-- C
+  sizeTip = sizeTip . mirrorTip
+sizeTip t = (sizeTip . mirrorTip) t -- Principio de extencionalidad 
+sizeTip t = sizeTip (mirrorTip t)   -- def (.)
+
+-- caso base:
+sizeTip (Tip x) = sizeTip (mirrorTip (Tip x))
+              1 = sizeTip (Tip x)             -- def mirrorTip .2
+              1 = 1                           -- def sizeTip .1
+
+-- caso inductivo: tree = Join treeL treeR 
+HI1: sizeTip treeL = sizeTip (mirrorTip treeL)
+HI2: sizeTip treeR = sizeTip (mirrorTip treeR)
+TI:  sizeTip (Join treeL treeR) = sizeTip (mirrorTip (Join treeL treeR))
+
+sizeTip (mirrorTip (Join treeL treeR ))
+sizeTip (Join (mirrorTip treeR) (mirrorTip treeL)) -- def mirrorTip .1
+1 + sizeTip (mirrorTip treeR) (mirrorTip treeL)    -- def sizeTip .2
+1 + sizeTip treeR + sizeTip treeL                  -- HI1 Y HI2
+1 + sizeTip treeL + sizeTip treeR                  -- asociatividad de la suma
+sizeTip (Join treeL treeR)                         -- def sizeTip .2
