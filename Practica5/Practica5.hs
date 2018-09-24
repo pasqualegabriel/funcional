@@ -143,5 +143,25 @@ nodesTip :: TipTree a -> Int
 nodesTip  (Tip _)   = 0
 nodesTip (Join x y) = 1 + (nodesTip x) + (nodesTip y)
 
+-- B
+    mirrorTip . mirrorTip = id
+(mirrorTip . mirrorTip) t = id t -- Principio de extencionalidad 
+  mirrorTip (mirrorTip t) = t    -- def (.)
 
+-- caso base:
+mirrorTip (mirrorTip (Tip x)) = Tip x
+                        Tip x = Tip x -- def mirrorTip .2 x2
 
+-- caso inductivo: tree = Join treeL treeR 
+HI1: mirrorTip (mirrorTip treeL) = treeL
+HI2: mirrorTip (mirrorTip treeR) = treeR
+TI:  mirrorTip (mirrorTip (Join treeL treeR)) = Join treeL treeR
+
+mirrorTip (mirrorTip (Join treeL treeR))
+mirrorTip (Join (mirrorTip treeR) (mirrorTip treeL))             -- def mirrorTip .1
+Join (mirrorTip (mirrorTip treeL)) (mirrorTip (mirrorTip treeR)) -- def mirrorTip .1
+Join treeL treeR                                                 -- HI1 Y HI2
+
+mirrorTip :: TipTree a -> TipTree a
+mirrorTip (Join x y) = Join (mirrorTip y) (mirrorTip x)
+mirrorTip t = t
