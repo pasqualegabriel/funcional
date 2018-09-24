@@ -107,105 +107,41 @@ swap (x, y) = uncurry (flip (,)) (x, y) -- Principio de extencionalidad
      (y, x) = flip (,) x y              -- def uncurry
      (y, x) = (y, x)                    -- def flip
 
--- 2 Inducción sobre los naturales
 
-EORO :: even n || odd n ≡ True
-
--- Caso Base: EORO(Z)
-even Z || odd Z = True
-  True || odd Z = True -- even .1
-           True = True -- (||).1
-
--- Caso Inductivo:
-I Hipotesis inductiva: EORO(m)
-I Tesis inductiva: EORO(S m)
-
-even (S m) || odd (S m) = True
-     odd m || odd (S m) = True -- EVEN .2
-        odd m || even m = True -- ODD .2
-        even m || odd m = True -- CONMUT
-                  True = True  -- HI
-
--- Ejercicio D
-gauss 0 = 0
-gauss n = n + gauss (n -1)
-
-gauss n = div (n*(n+1)) 2
-
--- Caso Base: gauss(Z)
-gauss 0 = div (0*(0+1)) 2
-gauss 0 = 0 -- arit
-      0 = 0 -- gauss .1       
-
--- Caso Inductivo:
-I Hipotesis inductiva: gauss(n)
-I Tesis inductiva: gauss(S n)
-
-gauss (n+1) = div ((n+1)*((n+1)+1)) 2
-
--- 3. Inducción sobre listas
-
--- Indique claramente el esquema inductivo de las listas. Luego, demuestre las siguientes propiedades sobre listas:
+-- Trees
+data TipTree a = Tip a | Join (TipTree a) (TipTree a)
 
 -- A
-3A) length (xs ++ ys) = length xs ++ length ys
+sizeTip t = leavesTip t + nodesTip t
 
-EI [a] = 3A([]) ^ (Vxs: [a]) (3A(xs) => (Vx: a) (3A(x:xs)))
+-- caso base:
+sizeTip (Tip x) = leavesTip (Tip x) + nodesTip (Tip x)
+              1 = 1 + 0   -- def sizeTip 1
+              1 = 1
 
--- Caso Base: 3A([])
-length ([] ++ ys) = length [] + length ys
-        length ys = length [] + length ys -- def (++)
-        length ys = 0 + length ys         -- def lenght .1
-        length ys = length ys             -- arit
+-- caso inductivo: tree = Join treeL treeR 
+HI1: sizeTip treeL = leavesTip treeL + nodesTip treeL
+HI2: sizeTip treeR = leavesTip treeR + nodesTip treeR
+TI:  sizeTip (Join treeL treeR) = leavesTip (Join treeL treeR) + nodesTip (Join treeL treeR)
 
--- Caso Inductivo:
-I Hipotesis inductiva: 3A(xs)
-I Tesis inductiva: 3A(x:xs)
+leavesTip (Join treeL treeR) + nodesTip (Join treeL treeR)
+leavesTip treeL + leavesTip treeR + nodesTip (Join treeL treeR)         -- def leavesTip .2
+leavesTip treeL + leavesTip treeR + 1 + nodesTip treeL + nodesTip treeR -- def nodesTip .2
+1 + leavesTip treeL + nodesTip treeL + leavesTip treeR + nodesTip treeR -- asociatividad de la suma
+                  1 + sizeTip treeL + sizeTip treeR                     -- HI1 Y HI2
+                  sizeTip (Join treeL treeR)                            -- def sizeTip .2
 
-length ((x:xs) ++ ys) = length (x:xs) + length ys
-length (x:(xs ++ ys)) = length (x:xs) + length ys -- def (++)
-1 + length (xs ++ ys) = length (x:xs) + length ys -- def length .2
-1 + length (xs ++ ys) = 1 + length xs + length ys -- def length .2
-1 + length xs ++ length ys = 1 + length xs + length ys -- HI
+sizeTip :: TipTree a -> Int
+sizeTip  (Tip _)   = 1
+sizeTip (Join x y) = 1 + sizeTip x + sizeTip y
 
--- B
-3B) reverse (xs ++ ys) = reverse ys ++ reverse xs
+leavesTip :: TipTree a -> Int
+leavesTip  (Tip _)   = 1
+leavesTip (Join x y) = leavesTip x + leavesTip y
 
-EI [a] = 3B([]) ^ (Vxs: [a]) (3B(xs) => (Vx: a) (3A(x:xs)))
+nodesTip :: TipTree a -> Int
+nodesTip  (Tip _)   = 0
+nodesTip (Join x y) = 1 + (nodesTip x) + (nodesTip y)
 
--- Caso Base: 3B([])
-reverse ([] ++ ys) = reverse ys ++ reverse []
-        reverse ys = reverse ys ++ reverse [] -- def (++)
-        reverse ys = reverse ys ++ []         -- def reverse .1
-        reverse ys = reverse ys               -- def (++)
 
--- Caso Inductivo:
-I Hipotesis inductiva: 3B(xs)
-I Tesis inductiva: 3B(x:xs)
-
-         reverse ((x:xs) ++ ys) = reverse ys ++ reverse (x:xs)
-         reverse (x:(xs ++ ys)) = reverse ys ++ reverse (x:xs)    -- def (++)
-      reverse (xs ++ ys) ++ [x] = reverse ys ++ reverse (x:xs)    -- def reverse .2
-      reverse (xs ++ ys) ++ [x] = reverse ys ++ reverse xs ++ [x] -- def reverse .2
-reverse ys ++ reverse xs ++ [x] = reverse ys ++ reverse xs ++ [x] -- HI
-
--- C
-3C)      reverse . reverse = id
-    (reverse . reverse) xs = id xs -- Principio de extencionalidad
-    (reverse . reverse) xs = xs    -- def id
-      reverse (reverse xs) = xs    -- def (.)
-
-EI [a] = 3C([]) ^ (Vxs: [a]) (3C(xs) => (Vx: a) (3C(x:xs)))
-
--- Caso Base: 3C([])
-reverse (reverse []) = []
-          reverse [] = [] -- def reverse .1
-                  [] = [] -- def reverse .1
-
--- Caso Inductivo:
-I Hipotesis inductiva: 3C(xs)
-I Tesis inductiva: 3C(x:xs)
-
-   reverse (reverse (x:xs)) = (x:xs)
-reverse (reverse xs ++ [x]) = (x:xs) -- def reverse .2
 
