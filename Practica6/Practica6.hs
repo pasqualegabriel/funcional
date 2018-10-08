@@ -53,12 +53,6 @@ getM xss c f = foldr mn (error "error") (foldr mn (error "s") xss c) f
       mn xs r 0 = xs 
       mn xs r c = r (c - 1)
 
-data LTree a = L [a] | B a (LTree a) (LTree a)
-
-foldLT :: ([a] -> b) -> (a -> b -> b -> b) -> LTree a -> b
-foldLT fl fb (L xs) = fl xs
-foldLT fl fb (B x t1 t2) = fb x (foldLT fl fb t1) (foldLT fl fb t2)
-
 -- TipTree
 
 data TipTree a = Tip a | Join (TipTree a) (TipTree a)
@@ -100,4 +94,39 @@ mEscalar :: Poli -> Int -> Poli
 mEscalar p n = foldPoli (\x -> Mul (Cte n) (Cte x)) (Mul (Cte n) VarP) Add Mul p
 
 --sOptimize :: Poli -> Poli
+
+
+-- Parcial Mapa
+
+data Dir = L | R | S
+
+data Mapa a = Cofre [a] | Nada (Mapa a) | B [a] (Mapa a) (Mapa a)
+
+foldMapa :: ([a] -> b) -> (b -> b) -> ([a] -> b -> b -> b) -> Mapa a -> b
+foldMapa f g h (Cofre xs) = f xs
+foldMapa f g h (Nada m)   = g (foldMapa f g h m) 
+foldMapa f g h (B xs l r) = h xs (foldMapa f g h l) (foldMapa f g h r)
+
+objects :: Mapa a -> [a]
+objects = foldMapa id id (\xs l r -> xs ++ l ++ r) 
+--objects (B [1,2] (B [3,4,5] (Cofre [6,7]) (Nada (Cofre [8,9]))) (Cofre [10]))
+
+mapMapa :: (a -> b) -> Mapa a -> Mapa b
+mapMapa f = foldMapa (Cofre . (map f)) Nada (B . (map f))
+--mapMapa (+100) (B [1,2] (B [3,4,5] (Cofre [6,7]) (Nada (Cofre [8,9]))) (Cofre [10]))
+
+hasObjectAt :: (a -> Bool) -> Mapa a -> [Dir] -> Bool
+hasObjectAt f (Cofre xs)   []   = any f xs
+hasObjectAt f (B xs l r)   []   = any f xs
+hasObjectAt f (Nada m)   (S:ds) = hasObjectAt f m ds 
+hasObjectAt f (B xs l r) (L:ds) = hasObjectAt f l ds
+hasObjectAt f (B xs l r) (R:ds) = hasObjectAt f r ds
+--hasObjectAt (9==) (B [1,2] (B [3,4,5] (Cofre [6,7]) (Nada (Cofre [8,9]))) (Cofre [10])) [L,R,S]
+
+--hasObjectAtFold :: (a -> Bool) -> Mapa a -> [Dir] -> Bool
+--hasObjectAtFold f = foldMapa (const (any f ds)) h i
+	--where
+	--	h r (S:ds) = r ds
+
+
 
