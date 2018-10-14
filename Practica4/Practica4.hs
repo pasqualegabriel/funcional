@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE DeriveFoldable #-}
 
 fib' :: Int -> Int
 fib' 0 = 1
@@ -64,6 +65,12 @@ mapTip f (Join x y) = Join (mapTip f x) (mapTip f y)
 
 data Poli = Cte Int | VarP | Add Poli Poli | Mul Poli Poli
 
+foldPoli :: (Int -> a) -> a -> (a -> a -> a) -> (a -> a -> a) -> Poli -> a
+foldPoli f z g h (Cte x) = f x
+foldPoli f z g h VarP = z
+foldPoli f z g h (Add l r) = g (foldPoli f z g h l) (foldPoli f z g h r)
+foldPoli f z g h (Mul l r) = h (foldPoli f z g h l) (foldPoli f z g h r)
+
 -- retorna el resultado de evaluar un polinomio P con un valor x dado (P(x)).
 evalP :: Poli -> Int -> Int
 evalP (Cte x)   n = x
@@ -84,17 +91,26 @@ mEscalar (Mul x y) n = Mul (mEscalar x n) (mEscalar y n)
 -- de suma y multiplicación entre constantes ya fueron resueltas, es decir, un polinomio en donde
 -- no existen constructores de la forma Add (Cte _) (Cte _) ni Mul (Cte _) (Cte _)
 sOptimize :: Poli -> Poli
-sOptimize (Add (Cte x) (Cte y)) = Cte (x + y)
-sOptimize (Mul (Cte x) (Cte y)) = Cte (x * y)
-sOptimize a@(Add x y) = if canOptimize x || canOptimize y 
-                        then sOptimize (Add (sOptimize x) (sOptimize y))
-                        else a
-sOptimize m@(Mul x y) = if canOptimize x || canOptimize y 
-                        then sOptimize (Mul (sOptimize x) (sOptimize y))
-                        else m
+sOptimize (Add x y) = h (sOptimize x) (sOptimize y)
+sOptimize (Mul x y) = i (sOptimize x) (sOptimize y)
 sOptimize x = x
+
+h (Cte x) (Cte y) = Cte (x + y)
+h x y = Add x y
+
+i (Cte x) (Cte y) = Cte (x * y)
+i x y = Mul x y
 --sOptimize (Add (Mul (Cte 3) (Cte 3)) (Add (Cte 5) (Mul (Cte 2) (Cte 3))))
 --sOptimize (Add (Mul (Cte 3) (Cte 3)) (Add (Cte 5) (Mul VarP (Cte 3))))
+
+sOptimize2 :: Poli -> Poli
+sOptimize2 = foldPoli Cte VarP h i
+    where
+        h (Cte x) (Cte y) = Cte (x + y)
+        h x y = Add x y
+
+        i (Cte x) (Cte y) = Cte (x * y)
+        i x y = Mul x y
 
 canOptimize :: Poli -> Bool
 canOptimize (Add (Cte x) (Cte y)) = True
@@ -263,11 +279,15 @@ seq2List (Cat x y) = seq2List x ++ seq2List y
 -- Dado el siguiente tipo para árboles generales (árboles con una cantidad arbitraria de hijos en cada nodo):
 -- Definir las siguientes funciones:
 
-data GenTree a = GNode a [GenTree a]
+data GenTree a = GNode a [GenTree a] deriving (Show)
+
+foldGT :: (a -> [b] -> b) -> GenTree a -> b
+foldGT f (GNode x gs) = f x (map (foldGT f) gs)
 
 -- retorna la cantidad de elementos en el árbol.
 sizeGT :: GenTree a -> Int
-sizeGT (GNode e xs) = 1 + sizeGTAux xs
+sizeGT = foldGT (\x gs -> 1 + sum gs) 
+--sizeGT (GNode e xs) = 1 + sizeGTAux xs
 --sizeGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 []), (GNode 8 [])])]), (GNode 9 [])])
 
 sizeGTAux :: [GenTree a] -> Int
@@ -276,7 +296,11 @@ sizeGTAux (x:xs) = sizeGT x + sizeGTAux xs
 
 -- retorna la altura del árbol.
 heightGT :: GenTree a -> Int
-heightGT (GNode e xs) = 1 + heightGTxs xs
+heightGT = foldGT h
+    where
+        h x [] = 0
+        h x gs = 1 + maximum gs
+--heightGT (GNode e xs) = 1 + heightGTxs xs
 --heightGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 2 [(GNode 3 []), (GNode 3 [(GNode 4 [(GNode 5 [])]), (GNode 4 [])])]), (GNode 2 [])])
 
 heightGTxs :: [GenTree a] -> Int
@@ -285,7 +309,10 @@ heightGTxs (x:xs) = max (heightGT x) (heightGTxs xs)
 
 -- calcula la imagen especular del árbol.
 mirrorGT :: GenTree a -> GenTree a
-mirrorGT (GNode e xs) = GNode e (mirrorGTxs xs)
+mirrorGT = foldGT h
+    where
+        h x gs = GNode x (reverse gs)
+--mirrorGT (GNode e xs) = GNode e (mirrorGTxs xs)
 --mirrorGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 [(GNode 8 [])]), (GNode 9 [])])]), (GNode 10 [])])
 
 mirrorGTxs :: [GenTree a] -> [GenTree a]
@@ -294,7 +321,9 @@ mirrorGTxs (x:xs) = (mirrorGTxs xs) ++ [mirrorGT x]
 
 -- retorna una lista con los elementos en el árbol.
 toListGT :: GenTree a -> [a]
-toListGT (GNode e xs) = e : listGT xs
+toListGT = foldGT (\x gs -> x : concat gs) 
+--toListGT (GNode e xs) = e : foldr ((++) . toListGT) [] xs
+--toListGT (GNode e xs) = e : listGT xs
 --toListGT (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 [(GNode 8 [])]), (GNode 9 [])])]), (GNode 10 [])])
 
 listGT :: [GenTree a] -> [a]
@@ -303,7 +332,8 @@ listGT (x:xs) = toListGT x ++ listGT xs
 
 -- aplica una función dada a cada elemento en el árbol retornando uno estructuralmente equivalente.
 mapGT :: (a -> b) -> GenTree a -> GenTree b
-mapGT f (GNode e xs) = GNode (f e) (mapGTAux f xs)
+mapGT f = foldGT (GNode . f)
+-- mapGT f (GNode e xs) = GNode (f e) (mapGTAux f xs)
 --mapGT (10+) (GNode 1 [(GNode 2 [(GNode 3 [])]), (GNode 4 [(GNode 5 []), (GNode 6 [(GNode 7 [(GNode 8 [])]), (GNode 9 [])])]), (GNode 10 [])])
 
 mapGTAux :: (a -> b) -> [GenTree a] -> [GenTree b]
