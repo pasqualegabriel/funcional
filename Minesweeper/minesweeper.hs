@@ -56,9 +56,62 @@ makeGralBoard 2 c m n d res = if (n==2||n==3||odd m)
 makeGralBoard r 2 m n d res = if (n==2||n==2||odd m)
 							  then ["Impossible"]
 							  else rows d '.' 2 ++ rows (max 0 (r-d)) '*' 2
-makeGralBoard r c m n d 1   = rows (d-1) '.' c ++ [row (c-1) '.' ++ "*"] ++ [row 2 '.' ++ row (c-2) '*'] ++ rows (r-(d+1)) '*' c
-makeGralBoard r c m n d res = makeGralBoardAux r c m n d res
+makeGralBoard r c m n d res = if (n>9) ----cambiar 9 por 4.
+							  then haySolucion r c m n d res
+							  else ["Impossible"]
 
+
+haySolucion::Int->Int->Int->Int->Int->Int->Board
+haySolucion r c m n d res = if (n>= 3*c)
+							then haySolucion2 r c m n d res
+							else ["a desarrollar"]
+
+haySolucion2::Int->Int->Int->Int->Int->Int->Board
+haySolucion2 r c m n d res = rows (d-1) '.' c ++ [row (c-1) '.' ++ "*"] ++
+							 [row 2 '.' ++ row (c-2) '*'] ++ rows (r-(d+1)) '*' c --Puede fallar el ultimo
+
+--haySolucion3::Int->Int->Int->Int->Int->Int->Board
+
+
+{-
+TABLEROS AL MENOS 3X3
+En este caso, n>9 =====> HAY SOLUCION
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX-}
+
+{- HAYSOLUCION2 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+si n=> 3*C => llenar de minas izq a der, arriba a abajo. XXXXX 
+nmq >= c || nmq < c-2 => coloca nmq izq a deren esa fila. 
+nmq == c-1 => la ultima mina en la fila que sigue.
+
+c.....		  c.....
+......		  ......
+......  ->	  .....*
+.*****		  ..****
+******		  ******
+
+
+-}
+
+{-HAYSOLUCION3
+n<3*c && n>=9 => llena r-3 de '*'
+tres filas restantes => llenar las minas q faltan columna x columna de izq a der. 
+SI mnq en c ==2, la ultimna mina se pone en la proxima columna.
+-}
+
+
+{-
+Ahora nos queda como mucho 9 celdas vacias localizadas en la punta derecha inferior en tablero de 3x3
+En este caso, podemos chequear a MANO que IF n==5||n==7, es IMPOSIBLE.
+Sino, hardcodea una configuracion valida para cada numero de celda vacia en 3x3 cuadrados.
+
+-}
+
+
+
+--makeGralBoardAux r c m n d res
+
+
+--makeGralBoard r c m n d 1   = rows (d-1) '.' c ++ [row (c-1) '.' ++ "*"] ++ [row 2 '.' ++ row (c-2) '*'] ++ rows (r-(d+1)) '*' c
 ---------------------------------------------------------------------------------------------------
 
 --A desarrollar...........................
