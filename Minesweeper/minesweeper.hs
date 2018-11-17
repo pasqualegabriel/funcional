@@ -53,9 +53,9 @@ makeGralBoard r 1 m n d res = rows n '.' 1 ++ rows m '*' 1
 makeGralBoard 2 c m n d res = if (n==2||n==3||odd m)
 							  then ["Impossible"]
 							  else (row (max 0 (c- (div m 2))) '.'++ row (div m 2) '*') : [(row (max 0 (c- (div m 2))) '.'++ row (div m 2) '*')]
-makeGralBoard r 2 m n d res = if (n==2|| odd m)
+makeGralBoard r 2 m n d res = if (n==2||n==2||odd m)
 							  then ["Impossible"]
-							  else buildRows r 2 m n d res
+							  else rows d '.' 2 ++ rows (max 0 (r-d)) '*' 2
 makeGralBoard r c m n d 1   = rows (d-1) '.' c ++ [row (c-1) '.' ++ "*"] ++ [row 2 '.' ++ row (c-2) '*'] ++ rows (r-(d+1)) '*' c
 makeGralBoard r c m n d res = makeGralBoardAux r c m n d res
 
