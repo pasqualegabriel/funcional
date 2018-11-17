@@ -41,6 +41,8 @@ replaceC (s:ss) = if s=="Impossible"
 				  then s:ss
 				  else ("c" ++ tail s):ss
 
+
+
 --D= N/C
 --res = N % C
 makeGralBoard:: Int -> Int -> Int -> Int -> Int -> Int -> Board
@@ -48,10 +50,10 @@ makeGralBoard 1 1 0 _ _ _   = ["."]
 makeGralBoard r c m 1 d res = buildRows r c m 1 d res
 makeGralBoard 1 c m n d res = [(row n '.') ++ (row m '*')] 
 makeGralBoard r 1 m n d res = rows n '.' 1 ++ rows m '*' 1
-makeGralBoard 2 c m n d res = if (((n==2)||(n==3)) && (odd m) )
+makeGralBoard 2 c m n d res = if (n==2||n==3||odd m)
 							  then ["Impossible"]
-							  else (row (div m 2) '*' ++ row (max 0 (c- (div m 2))) '.') : [(row (div m 2) '*' ++ row (max 0 (c- (div m 2))) '.')]
-makeGralBoard r 2 m n d res = if (((n==2)||(n==3)) && (odd m) )
+							  else (row (max 0 (c- (div m 2))) '.'++ row (div m 2) '*') : [(row (max 0 (c- (div m 2))) '.'++ row (div m 2) '*')]
+makeGralBoard r 2 m n d res = if (n==2|| odd m)
 							  then ["Impossible"]
 							  else buildRows r 2 m n d res
 makeGralBoard r c m n d 1   = rows (d-1) '.' c ++ [row (c-1) '.' ++ "*"] ++ [row 2 '.' ++ row (c-2) '*'] ++ rows (r-(d+1)) '*' c
@@ -90,7 +92,9 @@ evenNBoard r c m n d res f
 
 oddNBoard r c m n d res f 
 	|(n>=9 && r >=3 && c>=3) = if (n<c*2+3)
-		 	  				   then (row (div (n-3) 2) '.' ++ row (c-(div (n-3) 2)) '*') :[row (div (n-3) 2) '.' ++ row (c-(div (n-3) 2)) '*']++(row 3 '.' ++ row (c-3) '*'):rows (r-3) '*' c 
+		 	  				   then (row (div (n-3) 2) '.' ++ row (c-(div (n-3) 2)) '*') :
+		 	  				        [row (div (n-3) 2) '.' ++ row (c-(div (n-3) 2)) '*'] ++
+		 	  				        (row 3 '.' ++ row (c-3) '*') : rows (r-3) '*' c 
 		 	  				   else f
 	|otherwise = ["Impossible"]
 
