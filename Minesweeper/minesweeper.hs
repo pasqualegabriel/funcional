@@ -56,6 +56,13 @@ makeGralBoard 2 c m n d res = if (n==2||n==3||odd m)
 makeGralBoard r 2 m n d res = if (n==2||n==2||odd m)
 							  then ["Impossible"]
 							  else rows d '.' 2 ++ rows (max 0 (r-d)) '*' 2
+
+
+
+
+
+
+							  
 makeGralBoard r c m n d res = if (n>9) && (n>= 3*c) ----cambiar 9 por 4.
 							  then haySolucion1 r c m n d res
 							  else 	if (n>=9) && (n < 3 * c)
@@ -75,7 +82,7 @@ Sino, hardcodea una configuracion valida para cada numero de celda vacia en 3x3 
 nMenorANueve:: Int->Int->Int->Int->Int->Int->Board
 nMenorANueve r c m 5 d res = ["Impossible"]
 nMenorANueve r c m 7 d res = ["Impossible"]
-nMenorANueve r c m n d res = haySolucion2 r c m n d res
+nMenorANueve r c m n d res = if  haySolucion2 r c m n d res
 
 
 haySolucion1::Int->Int->Int->Int->Int->Int->Board
@@ -109,9 +116,9 @@ c....*
 
 
 
-
+c.....
 ******
-
+******
 
 
 -}
